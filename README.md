@@ -1,3 +1,3 @@
-# Web-App-and-RESTful-API
+# Web Apps and RESTful APIs
 
 Currently includes Flask apps and APIs 
