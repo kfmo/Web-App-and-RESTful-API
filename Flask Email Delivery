@@ -1,0 +1,54 @@
+from flask import Flask, current_app, render_template
+from flask_mail import Mail, Message
+import os, xlrd, pandas as pd
+
+#set wd
+os.chdir(os.path.dirname(os.path.realpath('__file__')))
+
+#if need to read xlsx workbook, parse worksheet, and pull needed cols
+xl = pd.ExcelFile('[filename]') #Remember to update name before running
+df1 = xl.parse('Sheet1')
+dfMsg1 = df1.iloc[:,[1,2,3,4,5]]
+df2 = xl.parse('Sheet2')
+dfMsg2 = df2.iloc[:,1]
+
+#create dataframes w/o headers
+df3 = dfMsg1.ix[:,1] #n x 1 df
+df4 = dfMsg1.ix[:,0] 
+df5 = dfMsg1.ix[:,2] 
+df6 = dfMsg2.ix[:] 
+df7 = dfMsg1.ix[:,3] 
+df8 = dfMsg1.ix[:,4] 
+
+#create dictionary with username as keys
+dc = dict(zip(df3, zip(df4, zip(df5, zip(df6, zip(df7, df8))))))
+
+#email server settings & login
+app = Flask(__name__)
+with app.app_context():
+	app.config.update(
+		DEBUG=True, #True for debugging, False for live blast
+		MAIL_SERVER = 'smtp.gmail.com'
+		MAIL_PORT = 465
+		MAIL_USE_SSL=True,
+		MAIL_USERNAME = '123abc@gmail.com',
+		DEFAULT_MAIL_SENDER = '123abc@gmail.com',
+		MAIL_PASSWORD = 'mail_password',
+		#MAIL_MAX_EMAILS = #input number
+		)
+	mail = Mail(app)
+
+	#keep connection open until finished sending emails
+	with mail.connect() as conn:
+		for n in df3:
+	
+			subj = #create email subject line
+			
+			msg = Message(sender = '123abc@gmail.com',
+						  recipients = #add recipient emails,
+						  body = render_template('plainTextMsg.txt', n = n, dc = dc), #message,
+						  html = render_template('htmlMsg.html', n = n, dc = dc), #message,
+						  subject = subj)
+
+			conn.send(msg)
+	print('Mail sent!')
